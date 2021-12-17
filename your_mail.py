@@ -51,7 +51,7 @@ class YourMail(Frame):
                                      width=15, bg=LINES)
         self.pick_your_email_list = Listbox(self, width=30, bg=BACKGROUND_COLOR, fg=FOREGROUND_COLOR,
                                             font=(FONT, 10, "bold"))
-        self.pick_your_email_list.insert(1, "df@gmail.com")
+        self.update_list_box()
         self.next_button = Button(self, text="Next", width=25, font=(FONT, 15, "bold"), fg=FOREGROUND_COLOR,
                                   bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0)
         self.next_button.grid(column=0, row=9, columnspan=2, pady=15)
@@ -116,6 +116,7 @@ class YourMail(Frame):
                         messagebox.showinfo(title="Attention",
                                             message=f"Your {self.your_email_e.get()} added successfully.")
                         self.clear_all_entries()
+                        self.pick_your_email_list.insert(END, self.your_email_e.get())
 
             else:
                 with open("your_data.json", "w") as data_file:
@@ -123,6 +124,8 @@ class YourMail(Frame):
                 messagebox.showinfo(title="Attention",
                                     message=f"Your {self.your_email_e.get()} added successfully.")
                 self.clear_all_entries()
+                self.pick_your_email_list.insert(END, self.your_email_e.get())
+
 
     def clear_all_entries(self):
         self.your_first_name_e.delete(0,END)
@@ -131,4 +134,10 @@ class YourMail(Frame):
         self.your_password_e.delete(0, END)
         self.password = None
 
+    def update_list_box(self):
+        if os.path.isfile("your_data.json"):
+            with open("your_data.json", "r") as data_file:
+                data = json.load(data_file)
+            for email in data:
+                self.pick_your_email_list.insert(END,email)
 
