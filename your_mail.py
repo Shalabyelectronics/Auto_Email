@@ -13,28 +13,29 @@ BORDER = "#5584AC"
 class YourMail(Frame):
     def __init__(self, root):
         super().__init__()
+        self.email_selected = None
         self.email_provider = None
         self.root = root
         self.config(bg=BACKGROUND_COLOR, bd=5, pady=5, padx=15)
 
-        self.your_section_l = Label(self, text="_Add or pick your E-mail_", font=(FONT, 15, "bold"),
+        self.your_section_l = Label(self, text="_Add your E-mail_", font=(FONT, 15, "bold"),
                                     fg=FOREGROUND_COLOR,
                                     bg=BACKGROUND_COLOR)
-        self.pick_your_mail = Label(self, text="_Or pick your E-mail_", font=(FONT, 15, "bold"),
+        self.pick_your_mail = Label(self, text="_pick your E-mail_", font=(FONT, 15, "bold"),
                                     fg=FOREGROUND_COLOR,
                                     bg=BACKGROUND_COLOR)
         self.your_first_name_l = Label(self, text="Your first name ", font=(FONT, 15), fg=FOREGROUND_COLOR,
                                        bg=BACKGROUND_COLOR)
-        self.your_first_name_e = Entry(self, font=(FONT, 15, "bold"), fg="black", width=15, bg=LINES)
+        self.your_first_name_e = Entry(self, font=(FONT, 15, "bold"), fg="black", width=20, bg=LINES)
         self.your_last_name_l = Label(self, text="Your last name ", font=(FONT, 15), fg=FOREGROUND_COLOR,
                                       bg=BACKGROUND_COLOR)
-        self.your_last_name_e = Entry(self, font=(FONT, 15, "bold"), fg="black", width=15, bg=LINES)
+        self.your_last_name_e = Entry(self, font=(FONT, 15, "bold"), fg="black", width=20, bg=LINES)
         self.save_button = Button(self, text="Save", width=25, font=(FONT, 15, "bold"), fg=FOREGROUND_COLOR,
                                   bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0,
                                   command=self.save_your_email)
         self.your_email_l = Label(self, text="Your E-mail        ", font=(FONT, 15), fg=FOREGROUND_COLOR,
                                   bg=BACKGROUND_COLOR)
-        self.your_email_e = Entry(self, font=(FONT, 15, "bold"), fg="black", width=15, bg=LINES)
+        self.your_email_e = Entry(self, font=(FONT, 15, "bold"), fg="black", width=20, bg=LINES)
         self.var = Variable()
         self.email_provider_google = Radiobutton(self, text="google.com", variable=self.var, value="@gmail.com",
                                                  bg=BACKGROUND_COLOR, fg=FOREGROUND_COLOR,
@@ -48,12 +49,14 @@ class YourMail(Frame):
                                      bg=BACKGROUND_COLOR)
         self.password = StringVar()
         self.your_password_e = Entry(self, textvariable=self.password, show="*", font=(FONT, 15, "bold"), fg="black",
-                                     width=15, bg=LINES)
+                                     width=20, bg=LINES)
+
         self.pick_your_email_list = Listbox(self, width=30, bg=BACKGROUND_COLOR, fg=FOREGROUND_COLOR,
-                                            font=(FONT, 10, "bold"))
+                                            font=(FONT, 15, "bold"))
         self.update_list_box()
-        self.next_button = Button(self, text="Next", width=25, font=(FONT, 15, "bold"), fg=FOREGROUND_COLOR,
-                                  bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0)
+        self.next_button = Button(self, text="Next Step", width=25, font=(FONT, 15, "bold"), fg=FOREGROUND_COLOR,
+                                  bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0,
+                                  command=self.next_step)
         self.next_button.grid(column=0, row=9, columnspan=2, pady=15)
         self.pick_your_email_list.grid(column=0, row=8, columnspan=2)
         self.pick_your_mail.grid(column=0, row=7, columnspan=2)
@@ -93,7 +96,8 @@ class YourMail(Frame):
                 "password": self.password.get()
             }
         }
-        if len(self.your_email_e.get()) == 0 and len(self.your_first_name_e.get()) == 0 and len(self.your_last_name_e.get()) == 0:
+        if len(self.your_email_e.get()) == 0 and len(self.your_first_name_e.get()) == 0 and len(
+                self.your_last_name_e.get()) == 0:
             messagebox.showinfo(title="Attention",
                                 message="please don't leave email and your first , last name empty")
         elif len(self.password.get()) < 8:
@@ -115,29 +119,34 @@ class YourMail(Frame):
                             json.dump(data, data_file, indent=4)
                         messagebox.showinfo(title="Attention",
                                             message=f"Your {self.your_email_e.get()} added successfully.")
-                        self.clear_all_entries()
                         self.pick_your_email_list.insert(END, self.your_email_e.get())
+                        self.clear_all_entries()
 
             else:
                 with open("your_data.json", "w") as data_file:
                     json.dump(new_data, data_file, indent=4)
                 messagebox.showinfo(title="Attention",
                                     message=f"Your {self.your_email_e.get()} added successfully.")
-                self.clear_all_entries()
                 self.pick_your_email_list.insert(END, self.your_email_e.get())
-
+                self.clear_all_entries()
 
     def clear_all_entries(self):
-        self.your_first_name_e.delete(0,END)
-        self.your_last_name_e.delete(0,END)
+        self.your_first_name_e.delete(0, END)
+        self.your_last_name_e.delete(0, END)
         self.your_email_e.delete(0, END)
         self.your_password_e.delete(0, END)
-        self.password = None
 
     def update_list_box(self):
         if os.path.isfile("your_data.json"):
             with open("your_data.json", "r") as data_file:
                 data = json.load(data_file)
             for email in data:
-                self.pick_your_email_list.insert(END,email)
+                self.pick_your_email_list.insert(END, email)
 
+    def next_step(self):
+        self.email_selected = self.pick_your_email_list.get(ANCHOR)
+        if len(self.email_selected) > 0:
+            print("go to next step")
+        else:
+            messagebox.showinfo(title="Attention",
+                                message=f"Your did not select any email yet..")
