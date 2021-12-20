@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
+import test_your_mail as tm
 import json
 import os
 
@@ -145,7 +146,7 @@ class YourMail(Frame):
     def next_step(self):
         self.email_selected = self.pick_your_email_list.get(ANCHOR)
         if len(self.email_selected) > 0:
-            print("go to next step")
+            tm.SetupEmail(root=self.root, your_email=self.email_selected, password=self.password)
         else:
             messagebox.showinfo(title="Attention",
                                 message=f"Your did not select any email yet..")
