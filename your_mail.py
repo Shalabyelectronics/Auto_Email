@@ -17,7 +17,6 @@ class YourMail(Frame):
         self.email_provider = None
         self.root = root
         self.config(bg=BACKGROUND_COLOR, bd=5, pady=5, padx=15)
-
         self.your_section_l = Label(self, text="_Add your E-mail_", font=(FONT, 15, "bold"),
                                     fg=FOREGROUND_COLOR,
                                     bg=BACKGROUND_COLOR)
@@ -57,9 +56,9 @@ class YourMail(Frame):
         self.next_button = Button(self, text="Next Step", width=25, font=(FONT, 15, "bold"), fg=FOREGROUND_COLOR,
                                   bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0,
                                   command=self.next_step)
-        self.next_button.grid(column=0, row=9, columnspan=2, pady=15)
-        self.pick_your_email_list.grid(column=0, row=8, columnspan=2)
-        self.pick_your_mail.grid(column=0, row=7, columnspan=2)
+        self.next_button.grid(column=2, row=6, pady=15)
+        self.pick_your_email_list.grid(column=2, row=1, rowspan=5, padx=15)
+        self.pick_your_mail.grid(column=2, row=0, columnspan=2)
         self.your_password_e.grid(column=1, row=5)
         self.your_password_l.grid(column=0, row=5, sticky=W)
         self.email_provider_yahoo.grid(column=1, row=4, sticky=W)
@@ -104,18 +103,18 @@ class YourMail(Frame):
             messagebox.showinfo(title="Attention",
                                 message=f"please check your password as it is {len(self.password.get())} length and it's not correct, be sure it is at least 8 digits length.")
         else:
-            if os.path.isfile("your_data.json"):
-                with open("your_data.json") as data_file:
+            if os.path.isfile("data/your_data.json"):
+                with open("data/your_data.json") as data_file:
                     data = json.load(data_file)
                     if self.your_email_e.get() in data:
                         messagebox.showinfo(title="Attention",
                                             message=f"Your {self.your_email_e.get()} is already existed.")
                         self.clear_all_entries()
                     else:
-                        with open("your_data.json", "r") as data_file:
+                        with open("data/your_data.json", "r") as data_file:
                             data = json.load(data_file)
                             data.update(new_data)
-                        with open("your_data.json", "w") as data_file:
+                        with open("data/your_data.json", "w") as data_file:
                             json.dump(data, data_file, indent=4)
                         messagebox.showinfo(title="Attention",
                                             message=f"Your {self.your_email_e.get()} added successfully.")
@@ -123,7 +122,7 @@ class YourMail(Frame):
                         self.clear_all_entries()
 
             else:
-                with open("your_data.json", "w") as data_file:
+                with open("data/your_data.json", "w") as data_file:
                     json.dump(new_data, data_file, indent=4)
                 messagebox.showinfo(title="Attention",
                                     message=f"Your {self.your_email_e.get()} added successfully.")
@@ -137,8 +136,8 @@ class YourMail(Frame):
         self.your_password_e.delete(0, END)
 
     def update_list_box(self):
-        if os.path.isfile("your_data.json"):
-            with open("your_data.json", "r") as data_file:
+        if os.path.isfile("data/your_data.json"):
+            with open("data/your_data.json", "r") as data_file:
                 data = json.load(data_file)
             for email in data:
                 self.pick_your_email_list.insert(END, email)
