@@ -2,9 +2,6 @@ import smtplib
 from tkinter import *
 import your_mail as ym
 import webbrowser
-from tkinter import messagebox
-import json
-import os
 
 FONT = "Baloo Bhaijaan 2"
 BACKGROUND_COLOR = "#F6F2D4"
@@ -23,6 +20,7 @@ class SetupEmail(Frame):
         self.provider = None
         self.provider_smtp = None
         self.provider_port = [465, 587]
+        self.help_site = None
         self.description_l = Label(self, text=f"Now we are going to get {self.your_email} ready.",
                                    font=(FONT, 15, "bold"),
                                    fg=FOREGROUND_COLOR,
@@ -53,8 +51,13 @@ class SetupEmail(Frame):
                                  bg=BACKGROUND_COLOR, relief="flat")
         self.next_button = Button(self, text="Next Step", width=25, font=(FONT, 15, "bold"), fg=FOREGROUND_COLOR,
                                   bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0)
+        self.help_button = Button(self, text="More details about setting up your e-mail.", width=25,
+                                  font=(FONT, 15, "bold"), fg=FOREGROUND_COLOR,
+                                  bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0,
+                                  command=self.get_help)
         self.back_button = Button(self, text="Go back", width=25, font=(FONT, 15, "bold"), fg=FOREGROUND_COLOR,
-                                  bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0, command=self.back_to)
+                                  bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0,
+                                  command=self.back_to)
 
         self.feed_info()
 
@@ -94,6 +97,7 @@ class SetupEmail(Frame):
                                       "radio button.")
             self.steps_list.insert(6, " access to less secure apps for all users.")
             self.steps_list.insert(7, " 5- Click the Save button.")
+            self.help_site = "https://support.google.com/accounts/answer/6010255?hl=en"
         elif self.provider == "Yahoo":
             self.provider_smtp = "smtp.mail.yahoo.com"
             self.email_provider_e.insert(0, self.provider_smtp)
@@ -106,11 +110,13 @@ class SetupEmail(Frame):
             self.steps_list.insert(4, " less secure sign in.")
             self.steps_list.insert(5, " 3-access to less secure apps ")
             self.steps_list.insert(6, " for all users.")
+            self.help_site = "https://help.yahoo.com/kb/SLN27791.html"
         else:
             self.provider_smtp = f"Add your {self.provider} SMTP."
             self.description_l.configure(text=f"Your {self.provider} provider did not updated yet.")
             self.email_provider_l.configure(text=f"{self.provider} SMTP :")
             self.email_provider_e.insert(0, self.provider_smtp)
+            self.help_site = "https://google.com"
 
     def test_connection(self):
         try:
@@ -124,24 +130,15 @@ class SetupEmail(Frame):
                 connection.close()
         except:
             self.test_result.config(text="Your E-mail is not ready please be sure to follow the steps.")
-            self.back_button.grid(column=0, row=7, columnspan=4, sticky=W + E, pady=15)
+            self.help_button.grid(column=0, row=7, columnspan=4, sticky=W + E, pady=15)
+            self.back_button.grid(column=0, row=8, columnspan=4, sticky=W + E, pady=15)
         else:
             self.test_result.config(text="Your E-mail is ready.")
             self.next_button.grid(column=0, row=7, columnspan=4, sticky=W + E, pady=15)
-
 
     def back_to(self):
         self.destroy()
         ym.YourMail(self.root)
 
-
-'''
- Turning on 'less secure apps' settings as mail domain Administrator
-
-Open your Google Admin console (admin.google.com).
-Click Security > Basic settings.
-Under Less secure apps, select Go to settings for less secure apps.
-In the subwindow, select the Enforce access to less secure apps for all users radio button.
-(You can also use the Allow users to manage their access to less secure apps, but don't forget to turn on the less secure apps option in users settings then!)
-Click the Save button.
-'''
+    def get_help(self):
+        webbrowser.open(self.help_site, new=1)
