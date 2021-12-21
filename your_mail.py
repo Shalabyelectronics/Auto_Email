@@ -14,6 +14,8 @@ BORDER = "#5584AC"
 class YourMail(Frame):
     def __init__(self, root):
         super().__init__()
+        self.provider_smtp = None
+        self.provider = None
         self.email_selected = None
         self.email_provider = None
         self.root = root
@@ -95,11 +97,13 @@ class YourMail(Frame):
             self.your_email_e.insert(0, your_email + self.email_provider)
 
     def save_your_email(self):
+        self.check_smtp()
         new_data = {
             self.your_email_e.get(): {
                 "first name": self.your_first_name_e.get().title(),
                 "last name": self.your_last_name_e.get().title(),
-                "password": self.password.get()
+                "password": self.password.get(),
+                "smtp": self.provider_smtp  # check provider first to decide which will be added
             }
         }
         if len(self.your_email_e.get()) == 0 and len(self.your_first_name_e.get()) == 0 and len(
@@ -154,15 +158,20 @@ class YourMail(Frame):
 
     def next_step(self):
         self.email_selected = self.pick_your_email_list.get(ANCHOR)
-        with open("data/your_data.json", "r") as data_file:
-            data = json.load(data_file)
-            self.save_password = data[self.email_selected]["password"]
-        if len(self.email_selected) > 0:
-            self.destroy()
-            tm.SetupEmail(root=self.root, your_email=self.email_selected, password=self.save_password)
-        else:
+        try:
+            with open("data/your_data.json", "r") as data_file:
+                data = json.load(data_file)
+                self.save_password = data[self.email_selected]["password"]
+        except KeyError:
             messagebox.showinfo(title="Attention",
-                                message=f"Your did not select any email yet..")
+                                message=f"You  did not select any email yet..")
+        else:
+            if len(self.email_selected) > 0:
+                self.destroy()
+                tm.SetupEmail(root=self.root, your_email=self.email_selected, password=self.save_password)
+            else:
+                messagebox.showinfo(title="Attention",
+                                    message=f"Your did not select any email yet..")
 
     def delete_email(self):
         self.email_selected = self.pick_your_email_list.get(ANCHOR)
@@ -181,3 +190,21 @@ class YourMail(Frame):
 
         with open("data/your_data.json", "w") as data_file:
             json.dump(data, data_file, indent=4)
+
+    def check_smtp(self):
+        provider = []
+        for char in range(len(self.your_email_e.get())):
+            if self.your_email_e.get()[char] == "@":
+                for dot in self.your_email_e.get()[char + 1:]:
+                    if dot == ".":
+                        break
+                    else:
+                        provider.append(dot)
+        self.provider = "".join(provider).title()
+        if self.provider == "Gmail":
+            self.provider_smtp = "smtp.gmail.com"
+        elif self.provider == "Yahoo":
+            self.provider_smtp = "smtp.mail.yahoo.com"
+        else:
+            messagebox.showinfo(title="Attention",
+                                message=f"You  do not know what is your email smtp server")

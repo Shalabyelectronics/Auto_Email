@@ -123,13 +123,12 @@ class SetupEmail(Frame):
             self.help_site = "https://google.com"
 
     def test_connection(self):
-        print(self.your_email, self.password)
         try:
             with smtplib.SMTP(self.provider_smtp, port=587) as connection:
                 connection.starttls()
                 connection.login(user=self.your_email, password=self.password)
                 connection.sendmail(from_addr=self.your_email, to_addrs=self.your_email, msg="Subject: Hello, "
-                                                                                             "World/n/n "
+                                                                                             "World\n\n "
                                                                                              "We are testing the email "
                                                                                              "connection.")
                 connection.close()
