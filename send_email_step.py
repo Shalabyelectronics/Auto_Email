@@ -1,4 +1,4 @@
-import tkinter as tk
+from tkinter import *
 from tkinter import messagebox
 import os
 import smtplib
@@ -11,13 +11,36 @@ LINES = "#95D1CC"
 BORDER = "#5584AC"
 
 
-class SendEmail(tk.Frame):
+class SendEmail(Frame):
     def __init__(self, root, from_email, to_email):
         super().__init__()
         self.root = root
         self.from_email = from_email
         self.to_email = to_email
-
+        self.config(bg=BACKGROUND_COLOR, bd=5, pady=5, padx=15)
+        self.your_section_l = Label(self, text="_we are going to schedule sending your email._",
+                                    font=(FONT, 18, "bold"),
+                                    fg=FOREGROUND_COLOR,
+                                    bg=BACKGROUND_COLOR)
+        self.from_l = Label(self, text="From E-mail : ", font=(FONT, 15), fg=FOREGROUND_COLOR,
+                            bg=BACKGROUND_COLOR)
+        self.from_e = Entry(self, font=(FONT, 15, "bold"), fg="black", width=20, bg=LINES)
+        self.to_l = Label(self, text="To E-mail : ", font=(FONT, 15), fg=FOREGROUND_COLOR,
+                          bg=BACKGROUND_COLOR)
+        self.to_e = Entry(self, font=(FONT, 15, "bold"), fg="black", width=20, bg=LINES)
+        self.message_field = Text(self, width=35, height=5, padx=5, pady=5, font=(FONT, 15, "bold"),
+                                  fg=FOREGROUND_COLOR, bg=BACKGROUND_COLOR, relief="sunken", bd=9)
+        self.generate_button = Button(self, text="Generate a message", width=25, font=(FONT, 15, "bold"),
+                                      fg=FOREGROUND_COLOR,
+                                      bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0)
+        self.generate_button.grid(column=0, row=4, columnspan=2, pady=15)
+        self.message_field.grid(column=0, row=3, columnspan=2, pady=15)
+        self.to_e.grid(column=1, row=2, pady=15)
+        self.to_l.grid(column=0, row=2, sticky=W)
+        self.from_e.grid(column=1, row=1)
+        self.from_l.grid(column=0, row=1, sticky=W)
+        self.your_section_l.grid(column=0, row=0, columnspan=2)
+        self.grid(column=0, row=0, pady=15, padx=15)
 
 
 """
