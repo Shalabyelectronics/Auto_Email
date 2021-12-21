@@ -1,6 +1,8 @@
 import smtplib
 from tkinter import *
 import your_mail as ym
+from tkinter import messagebox
+import recipient_email as rm
 import webbrowser
 
 FONT = "Baloo Bhaijaan 2"
@@ -21,6 +23,7 @@ class SetupEmail(Frame):
         self.provider_smtp = None
         self.provider_port = [465, 587]
         self.help_site = None
+        self.is_pass = False
         self.description_l = Label(self, text=f"Now we are going to get {self.your_email} ready.",
                                    font=(FONT, 15, "bold"),
                                    fg=FOREGROUND_COLOR,
@@ -50,7 +53,8 @@ class SetupEmail(Frame):
         self.test_result = Label(self, text="", font=(FONT, 15, "bold"), fg="red",
                                  bg=BACKGROUND_COLOR, relief="flat")
         self.next_button = Button(self, text="Next Step", width=25, font=(FONT, 15, "bold"), fg=FOREGROUND_COLOR,
-                                  bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0)
+                                  bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0,
+                                  command=self.go_next)
         self.help_button = Button(self, text="More details about setting up your e-mail.", width=25,
                                   font=(FONT, 15, "bold"), fg=FOREGROUND_COLOR,
                                   bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0,
@@ -119,8 +123,9 @@ class SetupEmail(Frame):
             self.help_site = "https://google.com"
 
     def test_connection(self):
+        print(self.your_email, self.password)
         try:
-            with smtplib.SMTP(self.provider_smtp) as connection:
+            with smtplib.SMTP(self.provider_smtp, port=587) as connection:
                 connection.starttls()
                 connection.login(user=self.your_email, password=self.password)
                 connection.sendmail(from_addr=self.your_email, to_addrs=self.your_email, msg="Subject: Hello, "
@@ -128,13 +133,15 @@ class SetupEmail(Frame):
                                                                                              "We are testing the email "
                                                                                              "connection.")
                 connection.close()
-        except:
+        except EXCEPTION as e:
             self.test_result.config(text="Your E-mail is not ready please be sure to follow the steps.")
             self.help_button.grid(column=0, row=7, columnspan=4, sticky=W + E, pady=15)
             self.back_button.grid(column=0, row=8, columnspan=4, sticky=W + E, pady=15)
+            print(e)
         else:
             self.test_result.config(text="Your E-mail is ready.")
             self.next_button.grid(column=0, row=7, columnspan=4, sticky=W + E, pady=15)
+            self.is_pass = True
 
     def back_to(self):
         self.destroy()
@@ -142,3 +149,11 @@ class SetupEmail(Frame):
 
     def get_help(self):
         webbrowser.open(self.help_site, new=1)
+
+    def go_next(self):
+        if self.is_pass:
+            self.destroy()
+            rm.RecipientEmail(self.root)
+        else:
+            messagebox.showinfo(title="Attention",
+                                message=f"You  did not test your email yet..")

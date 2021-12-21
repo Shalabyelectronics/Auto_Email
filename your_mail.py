@@ -17,6 +17,7 @@ class YourMail(Frame):
         self.email_selected = None
         self.email_provider = None
         self.root = root
+        self.save_password = None
         self.config(bg=BACKGROUND_COLOR, bd=5, pady=5, padx=15)
         self.your_section_l = Label(self, text="_Add your E-mail_", font=(FONT, 15, "bold"),
                                     fg=FOREGROUND_COLOR,
@@ -57,6 +58,11 @@ class YourMail(Frame):
         self.next_button = Button(self, text="Next Step", width=25, font=(FONT, 15, "bold"), fg=FOREGROUND_COLOR,
                                   bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0,
                                   command=self.next_step)
+        self.delete_email_b = Button(self, text="Delete E-mail", width=25, font=(FONT, 15, "bold"), fg=FOREGROUND_COLOR,
+                                     bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0,
+                                     command=self.delete_email)
+
+        self.delete_email_b.grid(column=1, row=6, pady=15)
         self.next_button.grid(column=2, row=6, pady=15)
         self.pick_your_email_list.grid(column=2, row=1, rowspan=5, padx=15)
         self.pick_your_mail.grid(column=2, row=0, columnspan=2)
@@ -67,7 +73,7 @@ class YourMail(Frame):
         self.your_email_e.grid(column=1, row=3)
         self.your_email_l.grid(column=0, row=3, sticky=W)
         self.your_section_l.grid(column=0, row=0, columnspan=2, sticky=N)
-        self.save_button.grid(column=0, row=6, columnspan=2, pady=15)
+        self.save_button.grid(column=0, row=6, columnspan=1, pady=15, padx=20)
         self.your_last_name_e.grid(column=1, row=2, pady=5)
         self.your_last_name_l.grid(column=0, row=2, sticky=W)
         self.your_first_name_e.grid(column=1, row=1)
@@ -102,7 +108,8 @@ class YourMail(Frame):
                                 message="please don't leave email and your first , last name empty")
         elif len(self.password.get()) < 8:
             messagebox.showinfo(title="Attention",
-                                message=f"please check your password as it is {len(self.password.get())} length and it's not correct, be sure it is at least 8 digits length.")
+                                message=f"please check your password as it is {len(self.password.get())} length and "
+                                        f"it's not correct, be sure it is at least 8 digits length.")
         else:
             if os.path.isfile("data/your_data.json"):
                 with open("data/your_data.json") as data_file:
@@ -112,14 +119,15 @@ class YourMail(Frame):
                                             message=f"Your {self.your_email_e.get()} is already existed.")
                         self.clear_all_entries()
                     else:
-                        with open("data/your_data.json", "r") as data_file:
-                            data = json.load(data_file)
+                        with open("data/your_data.json", "r") as read_data_file:
+                            data = json.load(read_data_file)
                             data.update(new_data)
-                        with open("data/your_data.json", "w") as data_file:
-                            json.dump(data, data_file, indent=4)
+                        with open("data/your_data.json", "w") as update_data_file:
+                            json.dump(data, update_data_file, indent=4)
                         messagebox.showinfo(title="Attention",
                                             message=f"Your {self.your_email_e.get()} added successfully.")
                         self.pick_your_email_list.insert(END, self.your_email_e.get())
+                        self.save_password = self.password.get()
                         self.clear_all_entries()
 
             else:
@@ -128,6 +136,7 @@ class YourMail(Frame):
                 messagebox.showinfo(title="Attention",
                                     message=f"Your {self.your_email_e.get()} added successfully.")
                 self.pick_your_email_list.insert(END, self.your_email_e.get())
+                self.save_password = self.password.get()
                 self.clear_all_entries()
 
     def clear_all_entries(self):
@@ -145,8 +154,30 @@ class YourMail(Frame):
 
     def next_step(self):
         self.email_selected = self.pick_your_email_list.get(ANCHOR)
+        with open("data/your_data.json", "r") as data_file:
+            data = json.load(data_file)
+            self.save_password = data[self.email_selected]["password"]
         if len(self.email_selected) > 0:
-            tm.SetupEmail(root=self.root, your_email=self.email_selected, password=self.password)
+            self.destroy()
+            tm.SetupEmail(root=self.root, your_email=self.email_selected, password=self.save_password)
         else:
             messagebox.showinfo(title="Attention",
                                 message=f"Your did not select any email yet..")
+
+    def delete_email(self):
+        self.email_selected = self.pick_your_email_list.get(ANCHOR)
+        with open("data/your_data.json", "r") as data_file:
+            data = json.load(data_file)
+            if self.email_selected in data:
+                ask_y_n = messagebox.askyesno(title="Deletion Confirmation", message=f"Are you sure that you want to "
+                                                                                     f"delete {self.email_selected}")
+                if ask_y_n:
+                    del data[self.email_selected]
+                    data.update(data_file)
+                    self.pick_your_email_list.delete(ANCHOR)
+            else:
+                messagebox.showinfo(title="Attention",
+                                    message=f"You  did not select any your email yet..")
+
+        with open("data/your_data.json", "w") as data_file:
+            json.dump(data, data_file, indent=4)

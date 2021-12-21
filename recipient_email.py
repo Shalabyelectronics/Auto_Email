@@ -18,11 +18,11 @@ class RecipientEmail(Frame):
         self.root = root
         self.config(bg=BACKGROUND_COLOR, bd=5, pady=5, padx=15)
         self.recipient_section_l = Label(self, text="_Add recipient E-mail_", font=(FONT, 15, "bold"),
-                                    fg=FOREGROUND_COLOR,
-                                    bg=BACKGROUND_COLOR)
+                                         fg=FOREGROUND_COLOR,
+                                         bg=BACKGROUND_COLOR)
         self.pick_recipient_mail = Label(self, text="_Recipients E-mail_", font=(FONT, 15, "bold"),
-                                    fg=FOREGROUND_COLOR,
-                                    bg=BACKGROUND_COLOR)
+                                         fg=FOREGROUND_COLOR,
+                                         bg=BACKGROUND_COLOR)
         self.recipient_first_name_l = Label(self, text="Recipient first name ", font=(FONT, 15), fg=FOREGROUND_COLOR,
                                             bg=BACKGROUND_COLOR)
         self.recipient_first_name_e = Entry(self, font=(FONT, 15, "bold"), fg="black", width=20, bg=LINES)
@@ -54,11 +54,15 @@ class RecipientEmail(Frame):
                                                   command=self.complete_email)
 
         self.pick_recipient_email_list = Listbox(self, width=30, bg=BACKGROUND_COLOR, fg=FOREGROUND_COLOR,
-                                            font=(FONT, 15, "bold"))
+                                                 font=(FONT, 15, "bold"))
         self.update_list_box()
         self.next_button = Button(self, text="Next Step", width=25, font=(FONT, 15, "bold"), fg=FOREGROUND_COLOR,
                                   bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0,
                                   command=self.next_step)
+        self.delete_email_b = Button(self, text="Delete E-mail", width=25, font=(FONT, 15, "bold"), fg=FOREGROUND_COLOR,
+                                     bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0,
+                                     command=self.delete_email)
+        self.delete_email_b.grid(column=1, row=6, pady=15)
         self.next_button.grid(column=2, row=6, pady=15)
         self.pick_recipient_email_list.grid(column=2, row=1, rowspan=5, padx=15)
         self.pick_recipient_mail.grid(column=2, row=0, columnspan=2)
@@ -69,7 +73,7 @@ class RecipientEmail(Frame):
         self.recipient_email_e.grid(column=1, row=3)
         self.recipient_email_l.grid(column=0, row=3, sticky=W)
         self.recipient_section_l.grid(column=0, row=0, columnspan=2, sticky=N)
-        self.save_button.grid(column=0, row=6, columnspan=2, pady=15)
+        self.save_button.grid(column=0, row=6, columnspan=1, pady=15, padx=20)
         self.recipient_last_name_e.grid(column=1, row=2, pady=5)
         self.recipient_last_name_l.grid(column=0, row=2, sticky=W)
         self.recipient_first_name_e.grid(column=1, row=1)
@@ -147,4 +151,22 @@ class RecipientEmail(Frame):
             # tm.SetupEmail(root=self.root, recipient_email=self.email_selected, password=self.password)
         else:
             messagebox.showinfo(title="Attention",
-                                message=f"recipient did not select any email yet..")
+                                message=f"You did not select any email yet..")
+
+    def delete_email(self):
+        self.email_selected = self.pick_recipient_email_list.get(ANCHOR)
+        with open("data/recipient_data.json", "r") as data_file:
+            data = json.load(data_file)
+            if self.email_selected in data:
+                ask_y_n = messagebox.askyesno(title="Deletion Confirmation", message=f"Are you sure that you want to "
+                                                                                     f"delete {self.email_selected}")
+                if ask_y_n:
+                    del data[self.email_selected]
+                    data.update(data_file)
+                    self.pick_recipient_email_list.delete(ANCHOR)
+            else:
+                messagebox.showinfo(title="Attention",
+                                    message=f"You  did not select any recipient email yet..")
+
+        with open("data/recipient_data.json", "w") as data_file:
+            json.dump(data, data_file, indent=4)
