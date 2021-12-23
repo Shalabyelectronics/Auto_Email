@@ -26,10 +26,10 @@ class SendEmail(Frame):
         self.from_email = from_email
         self.to_email = to_email
         self.config(bg=BACKGROUND_COLOR, bd=5, pady=5, padx=15)
-        self.your_section_l = Label(self, text="we are going to\n schedule sending your email.",
+        self.your_section_l = Label(self, text="We are going to schedule sending your email.",
                                     font=(FONT, 18, "bold"),
                                     fg=FOREGROUND_COLOR,
-                                    bg=BACKGROUND_COLOR, relief="sunken", bd=5)
+                                    bg=BACKGROUND_COLOR, relief="sunken", bd=3, padx=5, pady=5)
         self.from_l = Label(self, text="From E-mail : ", font=(FONT, 15), fg=FOREGROUND_COLOR,
                             bg=BACKGROUND_COLOR)
         self.from_e = Entry(self, font=(FONT, 15, "bold"), fg="white", width=20, bg=LINES)
@@ -39,59 +39,61 @@ class SendEmail(Frame):
                           bg=BACKGROUND_COLOR)
         self.to_e = Entry(self, font=(FONT, 15, "bold"), fg="white", width=20, bg=LINES)
         self.to_e.insert(0, self.to_email)
-        self.message_field = Text(self, width=40, height=15, padx=5, pady=5, font=(FONT, 12,"bold"),
+        self.message_field = Text(self, width=40, height=15, padx=5, pady=5, font=(FONT, 12, "bold"),
                                   fg=FOREGROUND_COLOR, bg=BACKGROUND_COLOR, relief="sunken", bd=9, wrap=WORD)
-        self.generate_button = Button(self, text="Generate a message", width=19, font=(FONT, 15, "bold"),
+        self.send_now_button = Button(self, text="Send now", width=19, font=(FONT, 15, "bold"),
                                       fg=FOREGROUND_COLOR,
                                       bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0,
                                       command=self.pick_random_quote)
-        self.attachment_button = Button(self, text="Add attachment", width=15, font=(FONT, 15, "bold"),
-                                        fg=FOREGROUND_COLOR,
-                                        bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0)
+        self.add_attachment_button = Button(self, text="Add attachment", width=15, font=(FONT, 15, "bold"),
+                                            fg=FOREGROUND_COLOR,
+                                            bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR,
+                                            highlightthickness=0)
         self.delete_attachment_button = Button(self, text="Delete attachment", width=16, font=(FONT, 15, "bold"),
                                                fg=FOREGROUND_COLOR,
                                                bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR,
                                                highlightthickness=0)
-        self.next_button = Button(self, text="Final step", width=16, font=(FONT, 15, "bold"),
+        self.send_later_button = Button(self, text="Send later", width=16, font=(FONT, 15, "bold"),
+                                        fg=FOREGROUND_COLOR,
+                                        bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR,
+                                        highlightthickness=0)
+        self.attachment_l = Label(self, text="Attachments.",
+                                  font=(FONT, 15, "bold"),
                                   fg=FOREGROUND_COLOR,
-                                  bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR,
-                                  highlightthickness=0)
-        self.attachment_l = Label(self, text="Attachments showing here.",
-                                  font=(FONT, 18, "bold"),
-                                  fg=FOREGROUND_COLOR,
-                                  bg=BACKGROUND_COLOR, relief="sunken", bd=5)
+                                  bg=BACKGROUND_COLOR, relief="sunken", bd=3)
         self.attachments_list = Listbox(self, width=30, bg=BACKGROUND_COLOR, fg=FOREGROUND_COLOR,
                                         font=(FONT, 15, "bold"))
-        self.var = Variable()
-        self.choose_msg_template_one = Radiobutton(self, text="Template one", variable=self.var, value="letter_1.txt",
-                                                   bg=BACKGROUND_COLOR, fg=FOREGROUND_COLOR,
-                                                   activebackground=BACKGROUND_COLOR, font=(FONT, 15),
-                                                   command=self.create_message_from_template)
-        self.choose_msg_template_two = Radiobutton(self, text="Template two", variable=self.var, value="letter_2.txt",
-                                                   bg=BACKGROUND_COLOR, fg=FOREGROUND_COLOR,
-                                                   activebackground=BACKGROUND_COLOR, font=(FONT, 15),
-                                                   command=self.create_message_from_template)
-        self.choose_msg_template_three = Radiobutton(self, text="Template three", variable=self.var,
-                                                     value="letter_3.txt",
-                                                     bg=BACKGROUND_COLOR, fg=FOREGROUND_COLOR,
-                                                     activebackground=BACKGROUND_COLOR, font=(FONT, 15),
-                                                     command=self.create_message_from_template)
+        self.templates_list = os.listdir("data/letter_templates")
+        self.var = StringVar(self)
+        self.var.set(self.templates_list[0])
+        self.templates_option = OptionMenu(self, self.var, *self.templates_list,
+                                           command=self.create_message_from_template)
+        self.templates_option.config(font=(FONT, 15, "bold"), fg=FOREGROUND_COLOR, bg=BACKGROUND_COLOR,
+                                     activebackground=BACKGROUND_COLOR)
+        self.template_menu = self.nametowidget(self.templates_option.menuname)
+        self.template_menu.config(font=(FONT, 12, "bold"), fg=FOREGROUND_COLOR, bg=BACKGROUND_COLOR,
+                                  activebackground=FOREGROUND_COLOR)
+        self.msg_title = Label(self, text="Message title:",
+                               font=(FONT, 15, "bold"),
+                               fg=FOREGROUND_COLOR,
+                               bg=BACKGROUND_COLOR, relief="sunken", bd=3)
 
-        self.choose_msg_template_one.grid(column=0, row=4, pady=15)
-        self.choose_msg_template_two.grid(column=1, row=4, pady=15)
-        self.choose_msg_template_three.grid(column=2, row=4, pady=15)
-        self.attachment_l.grid(column=2, row=0, columnspan=2, pady=15)
-        self.attachments_list.grid(column=2, row=3, columnspan=2, pady=15, padx=15)
-        self.attachment_button.grid(column=0, row=6, pady=15)
-        self.next_button.grid(column=3, row=6, pady=15)
-        self.delete_attachment_button.grid(column=2, row=6, pady=15)
-        self.generate_button.grid(column=1, row=6, pady=15)
-        self.message_field.grid(column=0, row=3, columnspan=2, pady=15)
-        self.to_e.grid(column=3, row=1, pady=15)
+        self.msg_title_e = Entry(self, font=(FONT, 15, "bold"), fg="white", width=20, bg=LINES)
+        self.templates_option.grid(column=0, row=6, columnspan=2)
+        self.msg_title_e.grid(column=1, row=2, sticky=W)
+        self.msg_title.grid(column=0, row=2, sticky=W)
+        self.attachment_l.grid(column=2, row=2, columnspan=2)
+        self.attachments_list.grid(column=2, row=3, columnspan=2, rowspan=3, pady=15, padx=15)
+        self.add_attachment_button.grid(column=2, row=6, pady=15)
+        self.send_later_button.grid(column=2, row=7, columnspan=2, pady=15)
+        self.delete_attachment_button.grid(column=3, row=6, pady=15)
+        self.send_now_button.grid(column=0, row=7, columnspan=2, pady=15)
+        self.message_field.grid(column=0, row=3, columnspan=2, rowspan=3, pady=15)
+        self.to_e.grid(column=3, row=1, pady=15, sticky=W)
         self.to_l.grid(column=2, row=1, sticky=W, padx=15)
-        self.from_e.grid(column=1, row=1, pady=15, sticky=E)
+        self.from_e.grid(column=1, row=1, pady=15, sticky=W)
         self.from_l.grid(column=0, row=1, sticky=W)
-        self.your_section_l.grid(column=0, row=0, columnspan=2)
+        self.your_section_l.grid(column=0, row=0, columnspan=4)
         self.grid(column=0, row=0, pady=15, padx=15)
 
     def sender_data(self):
@@ -116,7 +118,7 @@ class SendEmail(Frame):
             random_quote_index = random.randint(0, len(quotes_data))
             self.quote_picked = quotes_data[random_quote_index]
 
-    def create_message_from_template(self):
+    def create_message_from_template(self, *args):
         self.message_field.delete("1.0", "end")
         self.recipient_data()
         self.sender_data()
@@ -127,8 +129,7 @@ class SendEmail(Frame):
             "[SENDER_NAME]": self.sender_full_name
         }
         self.user_msg_template = self.var.get()
-        templates_list = os.listdir("data/letter_templates")
-        if self.user_msg_template in templates_list:
+        if self.user_msg_template in self.templates_list:
             with open(f"data/letter_templates/{self.user_msg_template}", "rt") as msg_template_file:
                 msg_template_data = msg_template_file.read()
                 for old_word, new_word in replacement_words.items():
@@ -141,6 +142,7 @@ class SendEmail(Frame):
             with open("data/letter_templates/temp_letter.txt", "rt") as temp_letter_file:
                 new_letter = temp_letter_file.read()
                 self.message_field.insert(INSERT, new_letter)
+
 
 
 """
