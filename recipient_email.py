@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
+import send_email_step as sendemail
 import json
 import os
 
@@ -11,10 +12,11 @@ BORDER = "#5584AC"
 
 
 class RecipientEmail(Frame):
-    def __init__(self, root):
+    def __init__(self, root, from_email):
         super().__init__()
         self.email_provider = None
         self.email_selected = None
+        self.from_email = from_email
         self.root = root
         self.config(bg=BACKGROUND_COLOR, bd=5, pady=5, padx=15)
         self.recipient_section_l = Label(self, text="_Add recipient E-mail_", font=(FONT, 15, "bold"),
@@ -147,7 +149,8 @@ class RecipientEmail(Frame):
     def next_step(self):
         self.email_selected = self.pick_recipient_email_list.get(ANCHOR)
         if len(self.email_selected) > 0:
-            pass
+            self.destroy()
+            sendemail.SendEmail(self.root, self.from_email, self.email_selected)
             # tm.SetupEmail(root=self.root, recipient_email=self.email_selected, password=self.password)
         else:
             messagebox.showinfo(title="Attention",

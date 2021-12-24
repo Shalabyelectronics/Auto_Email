@@ -152,7 +152,7 @@ class SetupEmail(Frame):
     def go_next(self):
         if self.is_pass:
             self.destroy()
-            rm.RecipientEmail(self.root)
+            rm.RecipientEmail(self.root, self.your_email)
         else:
             messagebox.showinfo(title="Attention",
                                 message=f"You  did not test your email yet..")
