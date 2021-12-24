@@ -65,8 +65,8 @@ class SendEmail(Frame):
                                   font=(FONT, 15, "bold"),
                                   fg=FOREGROUND_COLOR,
                                   bg=BACKGROUND_COLOR, relief="sunken", bd=3)
-        self.attachments_list = Listbox(self, width=30, bg=BACKGROUND_COLOR, fg=FOREGROUND_COLOR,
-                                        font=(FONT, 15, "bold"))
+        self.attachments_list = Listbox(self, width=50, height=15, bg=BACKGROUND_COLOR, fg=FOREGROUND_COLOR,
+                                        font=(FONT, 10, "bold"))
         self.templates_list = os.listdir("data/letter_templates")
         self.var = StringVar(self)
         self.var.set(self.templates_list[0])
@@ -166,15 +166,24 @@ class SendEmail(Frame):
             msg.set_content(self.temp_msg)
             if len(self.attachments_list_paths) != 0:
                 for file in self.attachments_list_paths:
-                    with open(file, "rb") as f:
-                        file_data = f.read()
-                        file_type = imghdr.what(f.name)
-                        file_name = f.name
-                    msg.add_attachment(file_data, maintype="image", subtype=file_type, filename=file_name)
+                    try:
+                        with open(file, "rb") as f:
+                            file_data = f.read()
+                            file_type = imghdr.what(f.name)
+                            file_name = os.path.basename(file)
+                        msg.add_attachment(file_data, maintype="image", subtype=file_type, filename=file_name)
+                    except:
+                        with open(file, "rb") as f:
+                            file_data = f.read()
+                            file_name = os.path.basename(file)
+                        msg.add_attachment(file_data, maintype="application", subtype="octet-stream",
+                                           filename=file_name)
 
             with smtplib.SMTP_SSL(self.sender_smtp, port=465) as connection:
                 connection.login(self.from_email, self.sender_password)
                 connection.send_message(msg)
+                messagebox.showinfo(title="Attention",
+                                    message=f"your message sent successfully to {self.to_email}")
         else:
             messagebox.showinfo(title="Attention",
                                 message=f"Please, don't leave any of the necessary fields empty.")
@@ -193,4 +202,3 @@ class SendEmail(Frame):
             self.attachments_list.delete(ANCHOR)
         else:
             self.attachments_list.delete(ANCHOR)
-
