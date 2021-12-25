@@ -7,6 +7,7 @@ import smtplib
 from email.message import EmailMessage
 from tkcalendar import Calendar
 import imghdr
+import datetime as dt
 
 FONT = "Baloo Bhaijaan 2"
 BACKGROUND_COLOR = "#F6F2D4"
@@ -18,6 +19,21 @@ BORDER = "#5584AC"
 class SendEmail(Frame):
     def __init__(self, root, from_email, to_email):
         super().__init__()
+        self.picked_second = None
+        self.picked_minute = None
+        self.picked_hour = None
+        self.date_picked_list = None
+        self.second_sb = None
+        self.minute_sb = None
+        self.hour_sb = None
+        self.second_string = None
+        self.minute_string = None
+        self.save_datetime_b = None
+        self.hour_string = None
+        self.calendar = None
+        self.title_label = None
+        self.time_title_label = None
+        self.pick_date_time_window = None
         self.attachments_list_paths = None
         self.msg_subject = None
         self.temp_msg = None
@@ -207,37 +223,50 @@ class SendEmail(Frame):
     def send_later(self):
         # current_folder = os.getcwd()
         # recipient_attachment_folder = os.mkdir(f"{current_folder}/recipient_email_date")
-        pick_date_time_window = Toplevel()
-        pick_date_time_window.geometry("+700+150")
-        pick_date_time_window.config(bg=FOREGROUND_COLOR, padx=15, pady=15, relief="sunken", bd=10)
-        pick_date_time_window.title("Pick date and time")
-        pick_date_time_window.iconbitmap("img/my.ico")
-        title_label = Label(pick_date_time_window, text="Pick date and time",
-                            font=(FONT, 15, "bold"), fg=BACKGROUND_COLOR,
-                            bg=FOREGROUND_COLOR)
-        calendar = Calendar(pick_date_time_window, selectmode="day", year=2021, month=12, day=30)
-        time_title_label = Label(pick_date_time_window, text="Hours  :  minutes  : seconds", font=(FONT, 15, "bold"),
-                                 fg=BACKGROUND_COLOR,
+        self.pick_date_time_window = Toplevel()
+        self.pick_date_time_window.geometry("+700+150")
+        self.pick_date_time_window.config(bg=FOREGROUND_COLOR, padx=15, pady=15, relief="sunken", bd=10)
+        self.pick_date_time_window.title("Pick date and time")
+        self.pick_date_time_window.iconbitmap("img/my.ico")
+        self.title_label = Label(self.pick_date_time_window, text="Pick date and time",
+                                 font=(FONT, 20, "bold"), fg=BACKGROUND_COLOR,
                                  bg=FOREGROUND_COLOR)
-        hour_string = StringVar()
-        minute_string = StringVar()
-        second_string = StringVar()
-        hour_sb = Spinbox(pick_date_time_window, from_=0, to=23, wrap=True, textvariable=hour_string, width=2,
-                          state="readonly",
-                          font=("Times", 20), justify=CENTER, fg=FOREGROUND_COLOR)
-        minute_sb = Spinbox(pick_date_time_window, from_=0, to=59, wrap=True, textvariable=minute_string, width=2,
-                            state="readonly",
-                            font=("Times", 20), justify=CENTER, fg=FOREGROUND_COLOR)
-        second_sb = Spinbox(pick_date_time_window, from_=0, to=59, wrap=True, textvariable=second_string, width=2,
-                            state="readonly",
-                            font=("Times", 20), justify=CENTER, fg=FOREGROUND_COLOR)
-        save_datetime_b = Button(pick_date_time_window, text="Save", font=(FONT, 15, "bold"), fg=FOREGROUND_COLOR,
-                                 bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0)
+        self.calendar = Calendar(self.pick_date_time_window, selectmode="day", year=2021, month=12, day=30)
+        self.time_title_label = Label(self.pick_date_time_window, text="Hours  :  Minutes  : Seconds",
+                                      font=(FONT, 15, "bold"),
+                                      fg=BACKGROUND_COLOR,
+                                      bg=FOREGROUND_COLOR)
+        self.hour_string = StringVar()
+        self.minute_string = StringVar()
+        self.second_string = StringVar()
+        self.hour_sb = Spinbox(self.pick_date_time_window, from_=0, to=23, wrap=True, textvariable=self.hour_string,
+                               width=2,
+                               state="readonly",
+                               font=(FONT, 20, "bold"), justify=CENTER, fg=FOREGROUND_COLOR)
+        self.minute_sb = Spinbox(self.pick_date_time_window, from_=0, to=59, wrap=True, textvariable=self.minute_string,
+                                 width=2,
+                                 state="readonly",
+                                 font=(FONT, 20, "bold"), justify=CENTER, fg=FOREGROUND_COLOR)
+        self.second_sb = Spinbox(self.pick_date_time_window, from_=0, to=59, wrap=True, textvariable=self.second_string,
+                                 width=2,
+                                 state="readonly",
+                                 font=(FONT, 20, "bold"), justify=CENTER, fg=FOREGROUND_COLOR)
+        self.save_datetime_b = Button(self.pick_date_time_window, text="Save", font=(FONT, 15, "bold"),
+                                      fg=FOREGROUND_COLOR,
+                                      bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0, command=self.save_datetime)
 
-        title_label.pack(side=TOP)
-        calendar.pack(side=TOP)
-        time_title_label.pack(side=TOP)
-        save_datetime_b.pack(side=BOTTOM, pady=20)
-        hour_sb.pack(side=LEFT, fill=X, expand=True)
-        minute_sb.pack(side=LEFT, fill=X, expand=True)
-        second_sb.pack(side=LEFT, fill=X, expand=True)
+        self.title_label.pack(side=TOP)
+        self.calendar.pack(side=TOP)
+        self.time_title_label.pack(side=TOP)
+        self.save_datetime_b.pack(side=BOTTOM, pady=20, fill=X, expand=True)
+        self.hour_sb.pack(side=LEFT, fill=X, expand=True)
+        self.minute_sb.pack(side=LEFT, fill=X, expand=True)
+        self.second_sb.pack(side=LEFT, fill=X, expand=True)
+
+    def save_datetime(self):
+        self.date_picked_list = self.calendar.get_date().split("/")
+        self.picked_hour = self.hour_string.get()
+        self.picked_minute = self.minute_string.get()
+        self.picked_second = self.second_string.get()
+
+        print(self.date_picked_list, self.picked_hour, self.picked_minute, self.picked_second)
