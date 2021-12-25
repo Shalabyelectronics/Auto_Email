@@ -5,6 +5,7 @@ from tkinter import messagebox, filedialog
 import os
 import smtplib
 from email.message import EmailMessage
+from tkcalendar import Calendar
 import imghdr
 
 FONT = "Baloo Bhaijaan 2"
@@ -60,7 +61,7 @@ class SendEmail(Frame):
         self.send_later_button = Button(self, text="Send later", width=16, font=(FONT, 15, "bold"),
                                         fg=FOREGROUND_COLOR,
                                         bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR,
-                                        highlightthickness=0)
+                                        highlightthickness=0, command=self.send_later)
         self.attachment_l = Label(self, text="Attachments.",
                                   font=(FONT, 15, "bold"),
                                   fg=FOREGROUND_COLOR,
@@ -202,3 +203,41 @@ class SendEmail(Frame):
             self.attachments_list.delete(ANCHOR)
         else:
             self.attachments_list.delete(ANCHOR)
+
+    def send_later(self):
+        # current_folder = os.getcwd()
+        # recipient_attachment_folder = os.mkdir(f"{current_folder}/recipient_email_date")
+        pick_date_time_window = Toplevel()
+        pick_date_time_window.geometry("+700+150")
+        pick_date_time_window.config(bg=FOREGROUND_COLOR, padx=15, pady=15, relief="sunken", bd=10)
+        pick_date_time_window.title("Pick date and time")
+        pick_date_time_window.iconbitmap("img/my.ico")
+        title_label = Label(pick_date_time_window, text="Pick date and time",
+                            font=(FONT, 15, "bold"), fg=BACKGROUND_COLOR,
+                            bg=FOREGROUND_COLOR)
+        calendar = Calendar(pick_date_time_window, selectmode="day", year=2021, month=12, day=30)
+        time_title_label = Label(pick_date_time_window, text="Hours  :  minutes  : seconds", font=(FONT, 15, "bold"),
+                                 fg=BACKGROUND_COLOR,
+                                 bg=FOREGROUND_COLOR)
+        hour_string = StringVar()
+        minute_string = StringVar()
+        second_string = StringVar()
+        hour_sb = Spinbox(pick_date_time_window, from_=0, to=23, wrap=True, textvariable=hour_string, width=2,
+                          state="readonly",
+                          font=("Times", 20), justify=CENTER, fg=FOREGROUND_COLOR)
+        minute_sb = Spinbox(pick_date_time_window, from_=0, to=59, wrap=True, textvariable=minute_string, width=2,
+                            state="readonly",
+                            font=("Times", 20), justify=CENTER, fg=FOREGROUND_COLOR)
+        second_sb = Spinbox(pick_date_time_window, from_=0, to=59, wrap=True, textvariable=second_string, width=2,
+                            state="readonly",
+                            font=("Times", 20), justify=CENTER, fg=FOREGROUND_COLOR)
+        save_datetime_b = Button(pick_date_time_window, text="Save", font=(FONT, 15, "bold"), fg=FOREGROUND_COLOR,
+                                 bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0)
+
+        title_label.pack(side=TOP)
+        calendar.pack(side=TOP)
+        time_title_label.pack(side=TOP)
+        save_datetime_b.pack(side=BOTTOM, pady=20)
+        hour_sb.pack(side=LEFT, fill=X, expand=True)
+        minute_sb.pack(side=LEFT, fill=X, expand=True)
+        second_sb.pack(side=LEFT, fill=X, expand=True)

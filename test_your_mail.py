@@ -132,11 +132,18 @@ class SetupEmail(Frame):
                                                                                              "We are testing the email "
                                                                                              "connection.")
                 connection.close()
-        except EXCEPTION as e:
+        except TimeoutError as e:
             self.test_result.config(text="Your E-mail is not ready please be sure to follow the steps.")
             self.help_button.grid(column=0, row=7, columnspan=4, sticky=W + E, pady=15)
             self.back_button.grid(column=0, row=8, columnspan=4, sticky=W + E, pady=15)
             print(e)
+        except TypeError as e:
+            self.test_result.config(text="Your Internet connection is down or slow check your connectio please!!!.")
+            print(e)
+        except EXCEPTION as e:
+            self.test_result.config(text="Your Internet connection is down or slow check your connectio please!!!.")
+            print(e)
+
         else:
             self.test_result.config(text="Your E-mail is ready.")
             self.next_button.grid(column=0, row=7, columnspan=4, sticky=W + E, pady=15)
