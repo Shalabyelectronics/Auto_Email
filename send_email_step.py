@@ -19,6 +19,17 @@ BORDER = "#5584AC"
 class SendEmail(Frame):
     def __init__(self, root, from_email, to_email):
         super().__init__()
+        self.picked_day = None
+        self.picked_month = None
+        self.picked_year = None
+        self.current_second = None
+        self.current_minute = None
+        self.current_hour = None
+        self.current_day = None
+        self.current_month = None
+        self.current_year = None
+        self.picked_date_and_time = None
+        self.date_and_time_now = None
         self.picked_second = None
         self.picked_minute = None
         self.picked_hour = None
@@ -264,9 +275,35 @@ class SendEmail(Frame):
         self.second_sb.pack(side=LEFT, fill=X, expand=True)
 
     def save_datetime(self):
+        self.pick_date_time_window.wm_attributes("-topmost", False)
         self.date_picked_list = self.calendar.get_date().split("/")
         self.picked_hour = self.hour_string.get()
         self.picked_minute = self.minute_string.get()
         self.picked_second = self.second_string.get()
+        self.date_and_time_now = dt.datetime.now()
+        self.current_year = self.date_and_time_now.year
+        self.current_month = self.date_and_time_now.month
+        self.current_day = self.date_and_time_now.day
+        self.current_hour = self.date_and_time_now.hour
+        self.current_minute = self.date_and_time_now.minute
+        self.current_second = self.date_and_time_now.second
+        self.picked_date_and_time = dt.datetime(year=int("20"+self.date_picked_list[2]), month=int(self.date_picked_list[0]), day=int(self.date_picked_list[1]), hour=int(self.picked_hour), minute=int(self.picked_minute), second=int(self.picked_second))
+        self.picked_year = self.picked_date_and_time.year
+        self.picked_month = self.picked_date_and_time.month
+        self.picked_day = self.picked_date_and_time.day
 
-        print(self.date_picked_list, self.picked_hour, self.picked_minute, self.picked_second)
+        if self.picked_year >= self.current_year and self.picked_month >= self.current_month and self.picked_day >= self.current_day and int(self.picked_hour) >= self.current_hour and int(self.picked_minute) >= self.current_minute and int(self.picked_second) >= self.current_second:
+            print(
+                f"Today Date is {self.current_day}/{self.current_month}/{self.current_year} and the time now is {self.current_hour} hour and {self.current_minute} minutes and {self.current_second} seconds")
+            print(
+                f"Picked Date is {self.picked_date_and_time.day}/{self.picked_date_and_time.month}/{self.picked_date_and_time.year} and the picked time is {self.picked_date_and_time.hour} hour and {self.picked_date_and_time.minute} minutes and {self.picked_date_and_time.second} seconds")
+        else:
+            attention = messagebox.showinfo(title="Attention", message="Please choose a date and time in future, not in the past.")
+
+            if attention == "ok":
+                self.pick_date_time_window.wm_attributes("-topmost", True)
+
+
+
+
+
