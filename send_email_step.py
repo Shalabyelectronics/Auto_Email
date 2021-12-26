@@ -19,6 +19,7 @@ BORDER = "#5584AC"
 class SendEmail(Frame):
     def __init__(self, root, from_email, to_email):
         super().__init__()
+        self.do_start_send_later = None
         self.picked_day = None
         self.picked_month = None
         self.picked_year = None
@@ -76,7 +77,7 @@ class SendEmail(Frame):
         self.send_now_button = Button(self, text="Send now", width=19, font=(FONT, 15, "bold"),
                                       fg=FOREGROUND_COLOR,
                                       bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0,
-                                      command=self.send_now)
+                                      command=lambda: self.send_now(do_send=True))
         self.add_attachment_button = Button(self, text="Add attachment", width=15, font=(FONT, 15, "bold"),
                                             fg=FOREGROUND_COLOR,
                                             bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR,
@@ -180,47 +181,50 @@ class SendEmail(Frame):
                 new_letter = temp_letter_file.read()
                 self.message_field.insert(INSERT, new_letter)
 
-    def send_now(self):
+    def send_now(self, do_send):
         if len(self.to_e.get()) != 0 and len(self.from_e.get()) != 0 and len(
                 self.message_field.get("1.0", "end")) != 1 and len(self.msg_title_e.get()) != 0:
             self.sender_data()
             self.recipient_data()
             self.temp_msg = self.message_field.get("1.0", "end")
             self.msg_subject = self.msg_title_e.get()
-            msg = EmailMessage()
-            msg["Subject"] = self.msg_subject
-            msg["From"] = self.from_email
-            msg["To"] = self.to_email
-            msg.set_content(self.temp_msg)
-            if len(self.attachments_list_paths) != 0:
-                for file in self.attachments_list_paths:
-                    try:
-                        with open(file, "rb") as f:
-                            file_data = f.read()
-                            file_type = imghdr.what(f.name)
-                            file_name = os.path.basename(file)
-                        msg.add_attachment(file_data, maintype="image", subtype=file_type, filename=file_name)
-                    except:
-                        with open(file, "rb") as f:
-                            file_data = f.read()
-                            file_name = os.path.basename(file)
-                        msg.add_attachment(file_data, maintype="application", subtype="octet-stream",
-                                           filename=file_name)
-
-            with smtplib.SMTP_SSL(self.sender_smtp, port=465) as connection:
-                connection.login(self.from_email, self.sender_password)
-                connection.send_message(msg)
-                messagebox.showinfo(title="Attention",
-                                    message=f"your message sent successfully to {self.to_email}")
+            self.do_start_send_later = "ready"
+            if do_send:
+                msg = EmailMessage()
+                msg["Subject"] = self.msg_subject
+                msg["From"] = self.from_email
+                msg["To"] = self.to_email
+                msg.set_content(self.temp_msg)
+                if len(self.attachments_list_paths) != 0:
+                    for file in self.attachments_list_paths:
+                        try:
+                            with open(file, "rb") as f:
+                                file_data = f.read()
+                                file_type = imghdr.what(f.name)
+                                file_name = os.path.basename(file)
+                            msg.add_attachment(file_data, maintype="image", subtype=file_type, filename=file_name)
+                        except:
+                            with open(file, "rb") as f:
+                                file_data = f.read()
+                                file_name = os.path.basename(file)
+                            msg.add_attachment(file_data, maintype="application", subtype="octet-stream",
+                                               filename=file_name)
+                        with smtplib.SMTP_SSL(self.sender_smtp, port=465) as connection:
+                            connection.login(self.from_email, self.sender_password)
+                            connection.send_message(msg)
+                            messagebox.showinfo(title="Attention",
+                                                message=f"your message sent successfully to {self.to_email}")
         else:
             messagebox.showinfo(title="Attention",
                                 message=f"Please, don't leave any of the necessary fields empty.")
+            self.do_start_send_later = "not ready"
 
     def add_attachment_to_listbox(self):
-        self.attachments_list_paths = list(filedialog.askopenfilenames(initialdir="/", title="Select files to attach",
-                                                                       filetypes=(
-                                                                           ("jpeg files", "*.jpg"),
-                                                                           ("all files", "*.*"))))
+        self.attachments_list_paths = list(
+            filedialog.askopenfilenames(initialdir="/", title="Select files to attach",
+                                        filetypes=(
+                                            ("jpeg files", "*.jpg"),
+                                            ("all files", "*.*"))))
         for attach in range(len(self.attachments_list_paths)):
             self.attachments_list.insert(attach, self.attachments_list_paths[attach])
 
@@ -232,55 +236,55 @@ class SendEmail(Frame):
             self.attachments_list.delete(ANCHOR)
 
     def send_later(self):
-        # current_folder = os.getcwd()
-        # recipient_attachment_folder = os.mkdir(f"{current_folder}/recipient_email_date")
-        self.pick_date_time_window = Toplevel()
-        self.pick_date_time_window.geometry("+700+150")
-        self.pick_date_time_window.config(bg=FOREGROUND_COLOR, padx=15, pady=15, relief="sunken", bd=10)
-        self.pick_date_time_window.title("Pick date and time")
-        self.pick_date_time_window.iconbitmap("img/my.ico")
-        self.title_label = Label(self.pick_date_time_window, text="Pick date and time",
-                                 font=(FONT, 20, "bold"), fg=BACKGROUND_COLOR,
-                                 bg=FOREGROUND_COLOR)
-        self.calendar = Calendar(self.pick_date_time_window, selectmode="day", year=2021, month=12, day=30)
-        self.time_title_label = Label(self.pick_date_time_window, text="Hours  :  Minutes  : Seconds",
-                                      font=(FONT, 15, "bold"),
-                                      fg=BACKGROUND_COLOR,
-                                      bg=FOREGROUND_COLOR)
-        self.hour_string = StringVar()
-        self.minute_string = StringVar()
-        self.second_string = StringVar()
-        self.hour_sb = Spinbox(self.pick_date_time_window, from_=0, to=23, wrap=True, textvariable=self.hour_string,
-                               width=2,
-                               state="readonly",
-                               font=(FONT, 20, "bold"), justify=CENTER, fg=FOREGROUND_COLOR)
-        self.minute_sb = Spinbox(self.pick_date_time_window, from_=0, to=59, wrap=True, textvariable=self.minute_string,
-                                 width=2,
-                                 state="readonly",
-                                 font=(FONT, 20, "bold"), justify=CENTER, fg=FOREGROUND_COLOR)
-        self.second_sb = Spinbox(self.pick_date_time_window, from_=0, to=59, wrap=True, textvariable=self.second_string,
-                                 width=2,
-                                 state="readonly",
-                                 font=(FONT, 20, "bold"), justify=CENTER, fg=FOREGROUND_COLOR)
-        self.save_datetime_b = Button(self.pick_date_time_window, text="Save", font=(FONT, 15, "bold"),
-                                      fg=FOREGROUND_COLOR,
-                                      bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0,
-                                      command=self.save_datetime)
+        self.send_now(do_send=False)
+        if self.do_start_send_later == "ready":
+            self.pick_date_time_window = Toplevel()
+            self.pick_date_time_window.geometry("+700+150")
+            self.pick_date_time_window.config(bg=FOREGROUND_COLOR, padx=15, pady=15, relief="sunken", bd=10)
+            self.pick_date_time_window.title("Pick date and time")
+            self.pick_date_time_window.iconbitmap("img/my.ico")
+            self.title_label = Label(self.pick_date_time_window, text="Pick date and time",
+                                     font=(FONT, 20, "bold"), fg=BACKGROUND_COLOR,
+                                     bg=FOREGROUND_COLOR)
+            self.calendar = Calendar(self.pick_date_time_window, selectmode="day", year=2021, month=12, day=30)
+            self.time_title_label = Label(self.pick_date_time_window, text="Hours  :  Minutes  : Seconds",
+                                          font=(FONT, 15, "bold"),
+                                          fg=BACKGROUND_COLOR,
+                                          bg=FOREGROUND_COLOR)
+            self.hour_string = StringVar()
+            self.minute_string = StringVar()
+            self.second_string = StringVar()
+            self.hour_sb = Spinbox(self.pick_date_time_window, from_=0, to=23, wrap=True, textvariable=self.hour_string,
+                                   width=2,
+                                   state="readonly",
+                                   font=(FONT, 20, "bold"), justify=CENTER, fg=FOREGROUND_COLOR)
+            self.minute_sb = Spinbox(self.pick_date_time_window, from_=0, to=59, wrap=True, textvariable=self.minute_string,
+                                     width=2,
+                                     state="readonly",
+                                     font=(FONT, 20, "bold"), justify=CENTER, fg=FOREGROUND_COLOR)
+            self.second_sb = Spinbox(self.pick_date_time_window, from_=0, to=59, wrap=True, textvariable=self.second_string,
+                                     width=2,
+                                     state="readonly",
+                                     font=(FONT, 20, "bold"), justify=CENTER, fg=FOREGROUND_COLOR)
+            self.save_datetime_b = Button(self.pick_date_time_window, text="Save", font=(FONT, 15, "bold"),
+                                          fg=FOREGROUND_COLOR,
+                                          bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0,
+                                          command=self.save_datetime)
 
-        self.title_label.pack(side=TOP)
-        self.calendar.pack(side=TOP)
-        self.time_title_label.pack(side=TOP)
-        self.save_datetime_b.pack(side=BOTTOM, pady=20, fill=X, expand=True)
-        self.hour_sb.pack(side=LEFT, fill=X, expand=True)
-        self.minute_sb.pack(side=LEFT, fill=X, expand=True)
-        self.second_sb.pack(side=LEFT, fill=X, expand=True)
+            self.title_label.pack(side=TOP)
+            self.calendar.pack(side=TOP)
+            self.time_title_label.pack(side=TOP)
+            self.save_datetime_b.pack(side=BOTTOM, pady=20, fill=X, expand=True)
+            self.hour_sb.pack(side=LEFT, fill=X, expand=True)
+            self.minute_sb.pack(side=LEFT, fill=X, expand=True)
+            self.second_sb.pack(side=LEFT, fill=X, expand=True)
 
     def save_datetime(self):
         self.pick_date_time_window.wm_attributes("-topmost", False)
         self.date_picked_list = self.calendar.get_date().split("/")
-        self.picked_hour = self.hour_string.get()
-        self.picked_minute = self.minute_string.get()
-        self.picked_second = self.second_string.get()
+        self.picked_hour = int(self.hour_string.get())
+        self.picked_minute = int(self.minute_string.get())
+        self.picked_second = int(self.second_string.get())
         self.date_and_time_now = dt.datetime.now()
         self.current_year = self.date_and_time_now.year
         self.current_month = self.date_and_time_now.month
@@ -298,20 +302,38 @@ class SendEmail(Frame):
 
         if self.picked_year == self.current_year and self.picked_month == self.current_month and self.picked_day == self.current_day and int(
                 self.picked_hour) == self.current_hour and int(self.picked_minute) == self.current_minute and int(
-                self.picked_second) > self.current_second:
-            self.print_date_and_time()
+            self.picked_second) > self.current_second:
+            if os.path.isdir(f"{os.getcwd()}/send_later"):
+                print("file already exist")
+            else:
+                self.create_send_later_data_file()
         elif self.picked_year == self.current_year and self.picked_month == self.current_month and self.picked_day == self.current_day and int(
                 self.picked_hour) == self.current_hour and int(self.picked_minute) > self.current_minute:
-            self.print_date_and_time()
+            if os.path.isdir(f"{os.getcwd()}/send_later"):
+                print("file already exist")
+            else:
+                self.create_send_later_data_file()
         elif self.picked_year == self.current_year and self.picked_month == self.current_month and self.picked_day == self.current_day and int(
                 self.picked_hour) > self.current_hour:
-            self.print_date_and_time()
+            if os.path.isdir(f"{os.getcwd()}/send_later"):
+                print("file already exist")
+            else:
+                self.create_send_later_data_file()
         elif self.picked_year == self.current_year and self.picked_month == self.current_month and self.picked_day > self.current_day:
-            self.print_date_and_time()
+            if os.path.isdir(f"{os.getcwd()}/send_later"):
+                print("file already exist")
+            else:
+                self.create_send_later_data_file()
         elif self.picked_year == self.current_year and self.picked_month > self.current_month:
-            self.print_date_and_time()
+            if os.path.isdir(f"{os.getcwd()}/send_later"):
+                print("file already exist")
+            else:
+                self.create_send_later_data_file()
         elif self.picked_year > self.current_year:
-            self.print_date_and_time()
+            if os.path.isdir(f"{os.getcwd()}/send_later"):
+                print("file already exist")
+            else:
+                self.create_send_later_data_file()
         else:
             attention = messagebox.showinfo(title="Attention",
                                             message=f"Please the date you picked is {self.picked_date_and_time.day}/{self.picked_date_and_time.month}/{self.picked_date_and_time.year}  and the picked time is {self.picked_date_and_time.hour} hour and {self.picked_date_and_time.minute} minutes and {self.picked_second} "
@@ -325,3 +347,26 @@ class SendEmail(Frame):
             f"Today Date is {self.current_day}/{self.current_month}/{self.current_year} and the time now is {self.current_hour} hour and {self.current_minute} minutes and {self.current_second} seconds")
         print(
             f"Picked Date is {self.picked_date_and_time.day}/{self.picked_date_and_time.month}/{self.picked_date_and_time.year} and the picked time is {self.picked_date_and_time.hour} hour and {self.picked_date_and_time.minute} minutes and {self.picked_second} seconds.")
+
+    def create_send_later_data_file(self):
+        current_folder = os.getcwd()
+        os.mkdir(path=f"{current_folder}/send_later")
+        os.mkdir(path=f"{current_folder}/send_later/data")
+        os.mkdir(path=f"{current_folder}/send_later/recipient_id")
+        new_data = {
+            0: {
+                "from_email": self.from_email,
+                "to_email": self.to_email,
+                "subject": self.msg_subject,
+                "message": self.temp_msg,
+                "attachment": self.attachments_list_paths,
+                "year": self.picked_year,
+                "month": self.picked_month,
+                "day": self.picked_day,
+                "hour": self.picked_hour,
+                "minute": self.picked_minute,
+                "second": self.picked_second,
+            }
+        }
+        with open(f"{current_folder}/send_later/data/send_later_data.json", "w") as data_file:
+            json.dump(new_data, data_file, indent=4)
