@@ -292,18 +292,45 @@ class SendEmail(Frame):
         self.picked_month = self.picked_date_and_time.month
         self.picked_day = self.picked_date_and_time.day
 
-        if self.picked_year >= self.current_year and self.picked_month >= self.current_month and self.picked_day >= self.current_day and int(self.picked_hour) >= self.current_hour and int(self.picked_minute) >= self.current_minute and int(self.picked_second) >= self.current_second:
-            print(
-                f"Today Date is {self.current_day}/{self.current_month}/{self.current_year} and the time now is {self.current_hour} hour and {self.current_minute} minutes and {self.current_second} seconds")
-            print(
-                f"Picked Date is {self.picked_date_and_time.day}/{self.picked_date_and_time.month}/{self.picked_date_and_time.year} and the picked time is {self.picked_date_and_time.hour} hour and {self.picked_date_and_time.minute} minutes and {self.picked_date_and_time.second} seconds")
+        if self.picked_year >= self.current_year:
+            if self.picked_year == self.current_year and self.picked_month >= self.current_month:
+                if self.picked_month == self.current_month and self.picked_day >= self.current_day:
+                    if self.picked_day == self.current_day and int(self.picked_hour) >= self.current_hour:
+                        if int(self.picked_hour) == self.current_hour and int(self.picked_minute) >= self.current_minute:
+                            if int(self.picked_minute) == self.current_minute and int(self.picked_second) >= self.current_second:
+                                print(
+                                    f"Today Date is {self.current_day}/{self.current_month}/{self.current_year} and the time now is {self.current_hour} hour and {self.current_minute} minutes and {self.current_second} seconds")
+                                print(
+                                    f"Picked Date is {self.picked_date_and_time.day}/{self.picked_date_and_time.month}/{self.picked_date_and_time.year} and the picked time is {self.picked_date_and_time.hour} hour and {self.picked_date_and_time.minute} minutes and {self.picked_date_and_time.second} seconds")
+                            else:
+                                attention = messagebox.showinfo(title="Attention",
+                                                                message="Please choose the same or greater second only!!! ")
+                                if attention == "ok":
+                                    self.pick_date_time_window.wm_attributes("-topmost", True)
+                        else:
+                            attention = messagebox.showinfo(title="Attention",
+                                                            message="Please choose the same or greater minute only!!! ")
+                            if attention == "ok":
+                                self.pick_date_time_window.wm_attributes("-topmost", True)
+                    else:
+                        attention = messagebox.showinfo(title="Attention",
+                                                        message="Please choose the same or greater hour only!!! ")
+                        if attention == "ok":
+                            self.pick_date_time_window.wm_attributes("-topmost", True)
+                else:
+                    attention = messagebox.showinfo(title="Attention",
+                                                    message="Please choose the same or greater day only!!! ")
+                    if attention == "ok":
+                        self.pick_date_time_window.wm_attributes("-topmost", True)
+
+            else:
+                attention = messagebox.showinfo(title="Attention",
+                                                message="Please choose the same or greater month only!!! ")
+                if attention == "ok":
+                    self.pick_date_time_window.wm_attributes("-topmost", True)
+
         else:
-            attention = messagebox.showinfo(title="Attention", message="Please choose a date and time in future, not in the past.")
+            attention = messagebox.showinfo(title="Attention", message="Please choose the same or greater year only!!! ")
 
             if attention == "ok":
                 self.pick_date_time_window.wm_attributes("-topmost", True)
-
-
-
-
-
