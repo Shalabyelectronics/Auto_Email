@@ -7,6 +7,7 @@ import smtplib
 from email.message import EmailMessage
 from tkcalendar import Calendar
 import imghdr
+import sending_schedule as ss
 import datetime as dt
 
 FONT = "Baloo Bhaijaan 2"
@@ -114,7 +115,11 @@ class SendEmail(Frame):
                                font=(FONT, 15, "bold"),
                                fg=FOREGROUND_COLOR,
                                bg=BACKGROUND_COLOR, relief="sunken", bd=3)
-
+        self.emails_schedule_log = Button(self, text="Emails schedule log", width=19, font=(FONT, 15, "bold"),
+                                          fg=FOREGROUND_COLOR,
+                                          bg=BACKGROUND_COLOR, activebackground=BACKGROUND_COLOR, highlightthickness=0,
+                                          command=lambda: ss.SendingScheduleManager(self.root))
+        self.emails_schedule_log.grid(column=1, row=7, columnspan=2)
         self.msg_title_e = Entry(self, font=(FONT, 15, "bold"), fg="white", width=20, bg=LINES)
         self.choose_template_l.grid(column=0, row=6)
         self.templates_option.grid(column=1, row=6)
@@ -123,9 +128,9 @@ class SendEmail(Frame):
         self.attachment_l.grid(column=2, row=2, columnspan=2)
         self.attachments_list.grid(column=2, row=3, columnspan=2, rowspan=3, pady=15, padx=15)
         self.add_attachment_button.grid(column=2, row=6, pady=15)
-        self.send_later_button.grid(column=2, row=7, columnspan=2, pady=15)
+        self.send_later_button.grid(column=3, row=7, pady=15)
         self.delete_attachment_button.grid(column=3, row=6, pady=15)
-        self.send_now_button.grid(column=0, row=7, columnspan=2, pady=15)
+        self.send_now_button.grid(column=0, row=7, pady=15)
         self.message_field.grid(column=0, row=3, columnspan=2, rowspan=3, pady=15)
         self.to_e.grid(column=3, row=1, pady=15, sticky=W)
         self.to_l.grid(column=2, row=1, sticky=E, padx=15)
@@ -258,11 +263,13 @@ class SendEmail(Frame):
                                    width=2,
                                    state="readonly",
                                    font=(FONT, 20, "bold"), justify=CENTER, fg=FOREGROUND_COLOR)
-            self.minute_sb = Spinbox(self.pick_date_time_window, from_=0, to=59, wrap=True, textvariable=self.minute_string,
+            self.minute_sb = Spinbox(self.pick_date_time_window, from_=0, to=59, wrap=True,
+                                     textvariable=self.minute_string,
                                      width=2,
                                      state="readonly",
                                      font=(FONT, 20, "bold"), justify=CENTER, fg=FOREGROUND_COLOR)
-            self.second_sb = Spinbox(self.pick_date_time_window, from_=0, to=59, wrap=True, textvariable=self.second_string,
+            self.second_sb = Spinbox(self.pick_date_time_window, from_=0, to=59, wrap=True,
+                                     textvariable=self.second_string,
                                      width=2,
                                      state="readonly",
                                      font=(FONT, 20, "bold"), justify=CENTER, fg=FOREGROUND_COLOR)
@@ -304,36 +311,61 @@ class SendEmail(Frame):
                 self.picked_hour) == self.current_hour and int(self.picked_minute) == self.current_minute and int(
             self.picked_second) > self.current_second:
             if os.path.isdir(f"{os.getcwd()}/send_later"):
-                print("file already exist")
+                self.update_send_later_data_file()
+                self.picked_datetime_attention()
+                self.pick_date_time_window.destroy()
             else:
                 self.create_send_later_data_file()
+                self.picked_datetime_attention()
+                self.pick_date_time_window.destroy()
         elif self.picked_year == self.current_year and self.picked_month == self.current_month and self.picked_day == self.current_day and int(
                 self.picked_hour) == self.current_hour and int(self.picked_minute) > self.current_minute:
             if os.path.isdir(f"{os.getcwd()}/send_later"):
-                print("file already exist")
+                self.update_send_later_data_file()
+                self.picked_datetime_attention()
+                self.pick_date_time_window.destroy()
             else:
                 self.create_send_later_data_file()
+                self.picked_datetime_attention()
+                self.pick_date_time_window.destroy()
         elif self.picked_year == self.current_year and self.picked_month == self.current_month and self.picked_day == self.current_day and int(
                 self.picked_hour) > self.current_hour:
             if os.path.isdir(f"{os.getcwd()}/send_later"):
-                print("file already exist")
+                self.update_send_later_data_file()
+                self.picked_datetime_attention()
+                self.pick_date_time_window.destroy()
             else:
                 self.create_send_later_data_file()
+                self.picked_datetime_attention()
+                self.pick_date_time_window.destroy()
         elif self.picked_year == self.current_year and self.picked_month == self.current_month and self.picked_day > self.current_day:
             if os.path.isdir(f"{os.getcwd()}/send_later"):
-                print("file already exist")
+                self.update_send_later_data_file()
+                self.picked_datetime_attention()
+                self.pick_date_time_window.destroy()
             else:
                 self.create_send_later_data_file()
+                self.picked_datetime_attention()
+                self.pick_date_time_window.destroy()
         elif self.picked_year == self.current_year and self.picked_month > self.current_month:
             if os.path.isdir(f"{os.getcwd()}/send_later"):
-                print("file already exist")
+                self.update_send_later_data_file()
+                self.picked_datetime_attention()
+                self.pick_date_time_window.destroy()
             else:
                 self.create_send_later_data_file()
+                self.picked_datetime_attention()
+                self.pick_date_time_window.destroy()
         elif self.picked_year > self.current_year:
             if os.path.isdir(f"{os.getcwd()}/send_later"):
-                print("file already exist")
+                self.update_send_later_data_file()
+                self.picked_datetime_attention()
+                self.pick_date_time_window.destroy()
             else:
                 self.create_send_later_data_file()
+                self.picked_datetime_attention()
+                self.pick_date_time_window.destroy()
+
         else:
             attention = messagebox.showinfo(title="Attention",
                                             message=f"Please the date you picked is {self.picked_date_and_time.day}/{self.picked_date_and_time.month}/{self.picked_date_and_time.year}  and the picked time is {self.picked_date_and_time.hour} hour and {self.picked_date_and_time.minute} minutes and {self.picked_second} "
@@ -370,3 +402,40 @@ class SendEmail(Frame):
         }
         with open(f"{current_folder}/send_later/data/send_later_data.json", "w") as data_file:
             json.dump(new_data, data_file, indent=4)
+
+    def update_send_later_data_file(self):
+        with open("send_later/data/send_later_data.json", "r") as send_later_data_file:
+            data = json.load(send_later_data_file)
+            recipient_id = []
+            new_id = None
+            for i in data:
+                recipient_id.append(int(i))
+            for x in range(len(recipient_id)):
+                if x in recipient_id:
+                    new_id = x + 1
+            new_data = {
+                new_id: {
+                    "from_email": self.from_email,
+                    "to_email": self.to_email,
+                    "subject": self.msg_subject,
+                    "message": self.temp_msg,
+                    "attachment": self.attachments_list_paths,
+                    "year": self.picked_year,
+                    "month": self.picked_month,
+                    "day": self.picked_day,
+                    "hour": self.picked_hour,
+                    "minute": self.picked_minute,
+                    "second": self.picked_second,
+                }
+            }
+            data.update(new_data)
+        with open("send_later/data/send_later_data.json", "w") as send_later_data_file:
+            json.dump(data, send_later_data_file, indent=4)
+
+    def picked_datetime_attention(self):
+        attention = messagebox.showinfo(title="Attention",
+                                        message=f"confirmed the date you picked is {self.picked_date_and_time.day}/{self.picked_date_and_time.month}/{self.picked_date_and_time.year}  and the picked time is {self.picked_date_and_time.hour} hour and {self.picked_date_and_time.minute} minutes and {self.picked_second} "
+                                                f"seconds You can check all Emails timing schedule by clicking  ("
+                                                f"Emails schedule log) Button.")
+        if attention == "ok":
+            self.pick_date_time_window.wm_attributes("-topmost", True)
