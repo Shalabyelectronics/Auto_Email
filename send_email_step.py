@@ -17,6 +17,64 @@ LINES = "#95D1CC"
 BORDER = "#5584AC"
 
 
+def check_time_to_send_emails():
+    with open("send_later/data/send_later_data.json", "r") as send_later_data_file:
+        data = json.load(send_later_data_file)
+        for i in data:
+            from_email = data[i]["from_email"]
+            to_email = data[i]["to_email"]
+            subject = data[i]["subject"]
+            message = data[i]["message"]
+            attachment = data[i]["attachment"]
+            year = int(data[i]["year"])
+            month = int(data[i]["month"])
+            day = int(data[i]["day"])
+            hour = int(data[i]["hour"])
+            minute = int(data[i]["minute"])
+            second = int(data[i]["second"])
+            sending_date_time = dt.datetime(year=year, month=month, day=day, hour=hour, minute=minute,
+                                            second=second)
+            now_date_time = dt.datetime.now()
+            current_date_time = dt.datetime(year=now_date_time.year, month=now_date_time.month,
+                                            day=now_date_time.day, hour=now_date_time.hour,
+                                            minute=now_date_time.minute, second=now_date_time.second)
+            if sending_date_time == current_date_time:
+                print(sending_date_time == current_date_time)
+                with open("data/your_data.json", "r") as your_data_file_emails:
+                    your_data = json.load(your_data_file_emails)
+                if from_email in your_data:
+                    access_your_email = your_data[from_email]["password"]
+                    your_email_smtp = your_data[from_email]["smtp"]
+                    msg = EmailMessage()
+                    msg["Subject"] = subject
+                    msg["From"] = from_email
+                    msg["To"] = to_email
+                    msg.set_content(message)
+                    if len(attachment) != 0:
+                        for file in attachment:
+                            try:
+                                with open(file, "rb") as f:
+                                    file_data = f.read()
+                                    file_type = imghdr.what(f.name)
+                                    file_name = os.path.basename(file)
+                                msg.add_attachment(file_data, maintype="image", subtype=file_type, filename=file_name)
+                            except:
+                                with open(file, "rb") as f:
+                                    file_data = f.read()
+                                    file_name = os.path.basename(file)
+                                msg.add_attachment(file_data, maintype="application", subtype="octet-stream",
+                                                   filename=file_name)
+                            with smtplib.SMTP_SSL(your_email_smtp, port=465) as connection:
+                                connection.login(from_email, access_your_email)
+                                connection.send_message(msg)
+                            del data[i]
+                            data.update(data)
+                            with open("send_later/data/send_later_data.json", "w") as send_later_data_file:
+                                json.dump(data,send_later_data_file, indent=4)
+            else:
+                print(sending_date_time, current_date_time, sending_date_time == current_date_time)
+
+
 class SendEmail(Frame):
     def __init__(self, root, from_email, to_email):
         super().__init__()

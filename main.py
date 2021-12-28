@@ -10,6 +10,10 @@ root.resizable(False, False)
 root.config(bg=FOREGROUND_COLOR)
 root.title("Auto Mail Quotes V1.0")
 root.iconbitmap("img/my.ico")
-ses.SendEmail(root, from_email="tsending4@gmail.com", to_email="dddd@outlook.com")
-# ym.YourMail(root)
+# ses.SendEmail(root, from_email="tsending4@gmail.com", to_email="tsending4@gmail.com")
+ym.YourMail(root)
 root.mainloop()
+while True:
+    ses.check_time_to_send_emails()
+
+
